@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Checador</string>
+    <string name="sesion">Sistema Checador</string>
+    <string name="user">Usuario</string>
+    <string name="pass">Contraseña</string>
+    <string name="action_sign_in">Inicia Sesión</string>
+    <string name="title_activity_principal">Principal</string>
+    <string name="title_camera_preview">Reader</string>
+</resources>
