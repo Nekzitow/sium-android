@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "624876932463",
+    "firebase_url": "https://sium-checador.firebaseio.com",
+    "project_id": "sium-checador",
+    "storage_bucket": "sium-checador.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:624876932463:android:ed0c7d929a31596a",
+        "android_client_info": {
+          "package_name": "umaya.edu.checador"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "624876932463-cfook8nnnbap5lvuo9nag2on5j0vhoac.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "umaya.edu.checador",
+            "certificate_hash": "499D45B55A703ACB455C2AE8CC9A689E57CAE986"
+          }
+        },
+        {
+          "client_id": "624876932463-ecj4lfi1l56ak7u4c0roa17uv0qq8obv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjirySWt34Juexx9Ml973Em56B8w0zf5Y"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "624876932463-ecj4lfi1l56ak7u4c0roa17uv0qq8obv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

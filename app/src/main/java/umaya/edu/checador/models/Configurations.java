@@ -12,7 +12,7 @@ import android.support.v4.content.ContextCompat;
  */
 
 public class Configurations {
-    public static final String loginUrl = "http://192.168.1.4/docentes/login";
+    public static final String loginUrl = "/docentes/login";
 
     public static  String CHECK_URL = "http://192.168.1.4/docentes/check";
 
@@ -26,6 +26,7 @@ public class Configurations {
 
     public static final String SHARED_NAME = "nombre";
     public static final String SHARED_ID = "id";
+    public static final String SHARED_URL = "id";
 
     public static final String LOGGEDIN_SHARED_PREF = "loggedin";
 
