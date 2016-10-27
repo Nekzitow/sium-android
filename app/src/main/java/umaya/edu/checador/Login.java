@@ -96,6 +96,7 @@ public class Login extends AppCompatActivity {
         }
         SharedPreferences preferences = getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
         String url2 = preferences.getString(Configurations.SHARED_URL, "http://192.168.1.4");
+        Log.d(TAG,url2);
         final JsonArrayRequest jsonObjectRequest = new JsonArrayRequest
                 (Request.Method.POST, url2+Configurations.loginUrl, js, new Response.Listener<JSONArray>() {
 
@@ -181,8 +182,6 @@ public class Login extends AppCompatActivity {
         editor.putString(Configurations.SHARED_NAME, nombre);
         editor.putInt(Configurations.SHARED_ID, id);
         editor.commit();
-        //preferencias de configuracion
-        fetchConfig();
     }
 
     /**
@@ -222,11 +221,13 @@ public class Login extends AppCompatActivity {
      */
     private void applyUrlConfig(){
         String urlConnect = firebaseRemoteConfig.getString("URL_CONNECT");
-        if (preferences != null){
-            SharedPreferences.Editor editor = preferences.edit();
-            editor.putString(Configurations.SHARED_URL,urlConnect);
-            editor.commit();
+        if (preferences == null){
+            preferences = Login.this.getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+            Log.d(TAG,"ENTRO");
         }
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(Configurations.SHARED_URL,urlConnect);
+        editor.commit();
         Log.d(TAG,"URL obtenida: " + urlConnect);
     }
 

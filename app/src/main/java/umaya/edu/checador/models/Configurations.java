@@ -14,7 +14,7 @@ import android.support.v4.content.ContextCompat;
 public class Configurations {
     public static final String loginUrl = "/docentes/login";
 
-    public static  String CHECK_URL = "http://192.168.1.4/docentes/check";
+    public static  String CHECK_URL = "/docentes/check";
 
     public static final String KEY_USER = "user";
     public static final String KEY_PASSWORD = "password";
