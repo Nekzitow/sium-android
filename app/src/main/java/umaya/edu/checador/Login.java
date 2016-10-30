@@ -81,54 +81,62 @@ public class Login extends AppCompatActivity {
         //Obtenemos el usuario y contraseña de login
         final String userName = usuario.getText().toString().trim();
         final String passwordField = password.getText().toString().trim();
-        queue = RequestSingleton.getInstance(this.getApplicationContext()).getRequestQueue();
-        //hacemos el login
-        progressBar.setMessage("Iniciado sesión");
-        progressBar.show();
-        JSONObject s = new JSONObject();
-        JSONArray js = new JSONArray();
-        try {
-            s.put(Configurations.KEY_USER, userName);
-            s.put(Configurations.KEY_PASSWORD, passwordField);
-            js.put(0, s);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        SharedPreferences preferences = getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
-        String url2 = preferences.getString(Configurations.SHARED_URL, "http://192.168.1.4");
-        Log.d(TAG,url2);
-        final JsonArrayRequest jsonObjectRequest = new JsonArrayRequest
-                (Request.Method.POST, url2+Configurations.loginUrl, js, new Response.Listener<JSONArray>() {
+        if (userName.equals("") || passwordField.equals("")){
+            if (userName.equals(""))
+                usuario.setError("Usuario Requerido");
+            if (passwordField.equals(""))
+                password.setError("Ingrese su contraseña");
+        }else {
+            queue = RequestSingleton.getInstance(this.getApplicationContext()).getRequestQueue();
+            //hacemos el login
+            progressBar.setMessage("Iniciado sesión");
+            progressBar.show();
+            JSONObject s = new JSONObject();
+            JSONArray js = new JSONArray();
+            try {
+                s.put(Configurations.KEY_USER, userName);
+                s.put(Configurations.KEY_PASSWORD, passwordField);
+                js.put(0, s);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            SharedPreferences preferences = getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+            String url2 = preferences.getString(Configurations.SHARED_URL, "http://192.168.1.4");
+            Log.d(TAG,url2);
+            final JsonArrayRequest jsonObjectRequest = new JsonArrayRequest
+                    (Request.Method.POST, url2+Configurations.loginUrl, js, new Response.Listener<JSONArray>() {
 
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        try {
-                            progressBar.dismiss();
-                            JSONObject objeto = response.getJSONObject(0);
-                            if (objeto.getString("response").equalsIgnoreCase(Configurations.LOGIN_SUCCESS)) {
-                                JSONObject Users = response.getJSONArray(1).getJSONObject(0);
-                                JSONObject Empleado = response.getJSONArray(2).getJSONObject(0);
-                                DBHelper dbHelper = DBHelper.getInstance(getApplicationContext());
-                                checkUser(Users, Empleado, dbHelper);
-                            } else {
-                                Toast.makeText(getApplicationContext(), objeto.getString("response") + " Intentelo Nuevamente", Toast.LENGTH_SHORT).show();
+                        @Override
+                        public void onResponse(JSONArray response) {
+                            try {
+                                progressBar.dismiss();
+                                JSONObject objeto = response.getJSONObject(0);
+                                if (objeto.getString("response").equalsIgnoreCase(Configurations.LOGIN_SUCCESS)) {
+                                    JSONObject Users = response.getJSONArray(1).getJSONObject(0);
+                                    JSONObject Empleado = response.getJSONArray(2).getJSONObject(0);
+                                    DBHelper dbHelper = DBHelper.getInstance(getApplicationContext());
+                                    checkUser(Users, Empleado, dbHelper);
+                                } else {
+                                    Toast.makeText(getApplicationContext(), objeto.getString("response") + " Intentelo Nuevamente", Toast.LENGTH_SHORT).show();
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
                         }
-                    }
-                }, new Response.ErrorListener() {
+                    }, new Response.ErrorListener() {
 
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-                        progressBar.dismiss();
-                        Toast.makeText(getApplicationContext(), "No se establecio conexion con el servidor", Toast.LENGTH_SHORT).show();
-                        defaultConfig();
-                    }
-                });
-        //agregamos la peticion
-        queue.add(jsonObjectRequest);
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            // TODO Auto-generated method stub
+                            progressBar.dismiss();
+                            Toast.makeText(getApplicationContext(), "No se establecio conexion con el servidor", Toast.LENGTH_SHORT).show();
+                            defaultConfig();
+                        }
+                    });
+            //agregamos la peticion
+            queue.add(jsonObjectRequest);
+        }
+
 
     }
 
