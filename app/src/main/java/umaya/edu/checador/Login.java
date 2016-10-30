@@ -124,6 +124,7 @@ public class Login extends AppCompatActivity {
                         // TODO Auto-generated method stub
                         progressBar.dismiss();
                         Toast.makeText(getApplicationContext(), "No se establecio conexion con el servidor", Toast.LENGTH_SHORT).show();
+                        defaultConfig();
                     }
                 });
         //agregamos la peticion
