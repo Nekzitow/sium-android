@@ -211,7 +211,6 @@ public class Login extends AppCompatActivity {
                     @Override
                     public void onSuccess(Void aVoid) {
                         firebaseRemoteConfig.activateFetched();
-                        Log.d(TAG,"SEE");
                         applyUrlConfig();
                     }
                 })
@@ -232,7 +231,6 @@ public class Login extends AppCompatActivity {
         String urlConnect = firebaseRemoteConfig.getString("URL_CONNECT");
         if (preferences == null){
             preferences = Login.this.getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
-            Log.d(TAG,"ENTRO");
         }
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(Configurations.SHARED_URL,urlConnect);
