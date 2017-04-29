@@ -18,7 +18,9 @@ import umaya.edu.checador.models.Notificaciones;
 
 public class PrincipalAdapter extends RecyclerView.Adapter<PrincipalAdapter.ViewHolder>{
     ArrayList<Notificaciones> notificacionesList = new ArrayList<>();
-    public PrincipalAdapter(){}
+    public PrincipalAdapter(ArrayList<Notificaciones> notificacionesList){
+        this.notificacionesList = notificacionesList;
+    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

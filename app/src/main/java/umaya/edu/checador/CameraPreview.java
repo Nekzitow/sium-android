@@ -52,12 +52,13 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         this.queue = RequestSingleton.getInstance(getApplicationContext()).getRequestQueue();
         progressBar = new ProgressDialog(this);
+        firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+        defaultConfig();
         readQR();
     }
 
     private void readQR(){
         zXingScannerView = new ZXingScannerView(this);
-
         setContentView(zXingScannerView);
         zXingScannerView.setResultHandler(this);
         zXingScannerView.startCamera();
@@ -97,20 +98,22 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
     }
 
     public void validateUser(String idUser){
+        SharedPreferences preferences = getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
         //Obtenemos el usuario y contraseña de login
         //hacemos el login
         progressBar.setMessage("Verificando Asistencia");
         progressBar.show();
         JSONObject s = new JSONObject();
         JSONArray js = new JSONArray();
+        int idUsuarioApp = preferences.getInt(Configurations.SHARED_ID,0);
         try {
             s.put(Configurations.SHARED_ID,idUser);
+            s.put("user",idUsuarioApp);
             js.put(0,s);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        SharedPreferences preferences = getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
-        String url = preferences.getString(Configurations.SHARED_URL, "http://192.168.1.4");
+        String url = preferences.getString(Configurations.SHARED_URL, "http://webcal.ddns.net/");
         Log.d(TAG,url);
         final JsonArrayRequest jsonObjectRequest = new JsonArrayRequest
                 (Request.Method.POST,url+Configurations.CHECK_URL,js, new Response.Listener<JSONArray>(){
@@ -124,7 +127,7 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
                             JSONObject objeto = response.getJSONObject(0);
                             int value = objeto.getInt("respuesta");
                             CustomDialog customDialog = new CustomDialog();
-                            customDialog.showDialogo(CameraPreview.this, value);
+                            customDialog.showDialogo(CameraPreview.this, value,CameraPreview.this);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -135,7 +138,7 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
                     public void onErrorResponse(VolleyError error) {
                         // TODO Auto-generated method stub
                         progressBar.dismiss();
-                        Toast.makeText(getApplicationContext(), "No se establecio conexion con el servidor: Intente de nuevo", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(), "No se establecio conexión con el servidor: Intente de nuevo", Toast.LENGTH_LONG).show();
                         defaultConfig();
 
                     }
@@ -203,7 +206,7 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
         // Por ejemplo si se ha producido un error al obtener los valores del servidor
         Map<String, Object> defaultConfigMap = new HashMap<>();
         //valor predeterminado en el caso que no se obtenga los valores de configuracion
-        defaultConfigMap.put("URL_CONNECT", "http://192.168.1.4");
+        defaultConfigMap.put("URL_CONNECT", "http://webcal.ddns.net/");
 
         //aplicamos las configuraciones y los valores prederteminado
         firebaseRemoteConfig.setConfigSettings(firebaseRemoteConfigSettings);

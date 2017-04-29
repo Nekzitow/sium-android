@@ -45,4 +45,30 @@
             android:text="@string/no_message_text"
             android:textAppearance="@style/TextAppearance.AppCompat.Small" />
     </LinearLayout>
+    <LinearLayout
+        android:id="@+id/noNetwork"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        tools:visibility="gone">
+        <ImageView
+            android:id="@+id/noNetworkIcon"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_portable_wifi_off_black_24dp"
+            android:tint="@android:color/darker_gray" />
+
+        <TextView
+            android:id="@+id/noNetworkText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/no_network_text"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+    </LinearLayout>
 </RelativeLayout>

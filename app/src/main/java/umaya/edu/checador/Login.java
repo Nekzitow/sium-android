@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
+import android.support.multidex.MultiDex;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -100,6 +101,7 @@ public class Login extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            Log.w(TAG,js.toString());
             SharedPreferences preferences = getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
             String url2 = preferences.getString(Configurations.SHARED_URL, "http://192.168.1.4");
             Log.d(TAG,url2);
@@ -129,7 +131,7 @@ public class Login extends AppCompatActivity {
                         public void onErrorResponse(VolleyError error) {
                             // TODO Auto-generated method stub
                             progressBar.dismiss();
-                            Toast.makeText(getApplicationContext(), "No se establecio conexion con el servidor", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "No se establecio conexión con el servidor", Toast.LENGTH_SHORT).show();
                             defaultConfig();
                         }
                     });
@@ -258,4 +260,11 @@ public class Login extends AppCompatActivity {
         //obtenemos configuracion remota
         fetchConfig();
     }
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
+
 }

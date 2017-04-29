@@ -18,7 +18,7 @@ import umaya.edu.checador.R;
 
 public class CustomDialog {
 
-    public void showDialogo(final Context context, int response){
+    public void showDialogo(final Context context, int response, final Activity asdf){
         final Dialog dialog = new Dialog(context);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setCancelable(false);
@@ -62,6 +62,7 @@ public class CustomDialog {
             @Override
             public void onClick(View v) {
                 dialog.dismiss();
+                asdf.finish();
             }
         });
 

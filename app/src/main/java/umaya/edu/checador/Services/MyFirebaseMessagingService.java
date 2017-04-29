@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.IBinder;
@@ -15,10 +16,15 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map;
 
 import umaya.edu.checador.Principal;
 import umaya.edu.checador.R;
+import umaya.edu.checador.models.DBHelper;
+import umaya.edu.checador.models.Notificaciones;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "Messaging Service";
@@ -26,17 +32,33 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
         Log.d(TAG, "¡Mensaje recibido!");
         displayNotification(remoteMessage.getNotification(), remoteMessage.getData());
-        sendNewPromoBroadcast(remoteMessage);
+        Notificaciones notificaciones = new Notificaciones();
+        notificaciones.setTitulo(remoteMessage.getNotification().getTitle());
+        notificaciones.setContenido(remoteMessage.getNotification().getBody());
+        notificaciones.setExtra(remoteMessage.getData().get("date"));
+        Calendar fechaActual = Calendar.getInstance();
+        String mes = Utilidades.getMonth(fechaActual.get(Calendar.MONTH));
+        String dia = fechaActual.get(Calendar.DATE) < 10 ? "0"+fechaActual.get(Calendar.DATE) : fechaActual.get(Calendar.DATE)+"";
+        String fecha = dia+" "+mes;
+        notificaciones.setFecha(fecha);
+        insertNotificacion(notificaciones);
+        sendNewPromoBroadcast(remoteMessage,fecha);
     }
 
-    private void sendNewPromoBroadcast(RemoteMessage remoteMessage) {
+    private void sendNewPromoBroadcast(RemoteMessage remoteMessage,String fecha) {
         Intent intent = new Intent(Principal.ACTION_NOTIFY_NEW);
-        intent.putExtra("title", remoteMessage.getNotification().getTitle());
+        intent.putExtra("titulo", remoteMessage.getNotification().getTitle());
         intent.putExtra("subtitulo", remoteMessage.getNotification().getBody());
         intent.putExtra("date", remoteMessage.getData().get("date"));
-        intent.putExtra("fecha", remoteMessage.getData().get("fecha"));
+        intent.putExtra("fecha", fecha);
         LocalBroadcastManager.getInstance(getApplicationContext())
                 .sendBroadcast(intent);
+    }
+
+    private void insertNotificacion(Notificaciones notificaciones){
+        DBHelper dbHelper = DBHelper.getInstance(getApplicationContext());
+        SQLiteDatabase sqLiteDatabase = dbHelper.getWritableDatabase();
+        dbHelper.insertNotifications(sqLiteDatabase,notificaciones);
     }
 
     private void displayNotification(RemoteMessage.Notification notification, Map<String, String> data) {
@@ -51,6 +73,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 .setContentTitle(notification.getTitle())
                 .setContentText(notification.getBody())
                 .setAutoCancel(true)
+                .setPriority(2)
                 .setSound(defaultSoundUri)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setContentIntent(pendingIntent);
