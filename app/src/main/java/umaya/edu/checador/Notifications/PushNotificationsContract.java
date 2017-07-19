@@ -26,6 +26,8 @@ public interface PushNotificationsContract {
 
         void loadNotifications();
 
+        void clearNotifications();
+
         void savePushMessage(String title, String description,
                              String expiryDate, String discount);
     }

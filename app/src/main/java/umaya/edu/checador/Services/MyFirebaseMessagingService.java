@@ -36,13 +36,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         notificaciones.setTitulo(remoteMessage.getNotification().getTitle());
         notificaciones.setContenido(remoteMessage.getNotification().getBody());
         notificaciones.setExtra(remoteMessage.getData().get("date"));
-        Calendar fechaActual = Calendar.getInstance();
-        String mes = Utilidades.getMonth(fechaActual.get(Calendar.MONTH));
-        String dia = fechaActual.get(Calendar.DATE) < 10 ? "0"+fechaActual.get(Calendar.DATE) : fechaActual.get(Calendar.DATE)+"";
-        String fecha = dia+" "+mes;
-        notificaciones.setFecha(fecha);
+        notificaciones.setFecha(Utilidades.obtenerFecha());
         insertNotificacion(notificaciones);
-        sendNewPromoBroadcast(remoteMessage,fecha);
+        sendNewPromoBroadcast(remoteMessage,Utilidades.obtenerFecha());
     }
 
     private void sendNewPromoBroadcast(RemoteMessage remoteMessage,String fecha) {

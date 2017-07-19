@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
+import umaya.edu.checador.Services.Utilidades;
 import umaya.edu.checador.models.Configurations;
 import umaya.edu.checador.models.CustomDialog;
 import umaya.edu.checador.models.RequestSingleton;
@@ -43,6 +45,8 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
     private FirebaseRemoteConfig firebaseRemoteConfig;
     private SharedPreferences preferences;
 
+    private int contador = 0;
+
     public static final String TAG = "LectorQR";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +57,8 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
         this.queue = RequestSingleton.getInstance(getApplicationContext()).getRequestQueue();
         progressBar = new ProgressDialog(this);
         firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
         defaultConfig();
         readQR();
     }
@@ -83,9 +89,21 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
         builder.setMessage(rawResult.getText());
         android.app.AlertDialog alert1 = builder.create();
         alert1.show();*/
-        validateUser(rawResult.getText());
+        String[] values = rawResult.getText().split(" ");
+        if(values.length > 1){
+            validateUser(values);
+            contador = 0;
+        }else{
+            contador++;
+            zXingScannerView.resumeCameraPreview(this);
+            if (contador>=7){
+                Utilidades.sendToastMessageLong(getApplicationContext(),
+                        "No se puede leer el codigo, contacte a sistemas");
+                contador=0;
+            }
+        }
+
         // If you would like to resume scanning, call this method below:
-        //zXingScannerView.resumeCameraPreview(this);
     }
 
     @Override
@@ -97,7 +115,7 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
         return true;
     }
 
-    public void validateUser(String idUser){
+    public void validateUser(String[] user){
         SharedPreferences preferences = getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
         //Obtenemos el usuario y contraseña de login
         //hacemos el login
@@ -106,17 +124,31 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
         JSONObject s = new JSONObject();
         JSONArray js = new JSONArray();
         int idUsuarioApp = preferences.getInt(Configurations.SHARED_ID,0);
+        int tipoUsuario = preferences.getInt(Configurations.LOGIN_TIPE_USER,0);
         try {
-            s.put(Configurations.SHARED_ID,idUser);
+            s.put(Configurations.SHARED_ID,user[0]);
+            s.put("salon",user[1]);
+            Log.e(TAG,user[1]);
             s.put("user",idUsuarioApp);
+            Log.e(TAG,user[0]);
+            Log.e(TAG,idUsuarioApp+"");
             js.put(0,s);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         String url = preferences.getString(Configurations.SHARED_URL, "http://webcal.ddns.net/");
+        switch (tipoUsuario){
+            case 1:
+                url+=Configurations.CHECK_URL_ADMON;
+                break;
+            case 2:
+                url+=Configurations.CHECK_URL;
+                break;
+        }
         Log.d(TAG,url);
+        final String URL = url;
         final JsonArrayRequest jsonObjectRequest = new JsonArrayRequest
-                (Request.Method.POST,url+Configurations.CHECK_URL,js, new Response.Listener<JSONArray>(){
+                (Request.Method.POST,URL,js, new Response.Listener<JSONArray>(){
 
                     @Override
                     public void onResponse(JSONArray response) {
@@ -126,6 +158,12 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
                             progressBar.dismiss();
                             JSONObject objeto = response.getJSONObject(0);
                             int value = objeto.getInt("respuesta");
+                            if (value == 1 || value == 2){
+                                SharedPreferences preferences = getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putString(Configurations.SHARED_CHECK, objeto.getString("hora"));
+                                editor.apply();
+                            }
                             CustomDialog customDialog = new CustomDialog();
                             customDialog.showDialogo(CameraPreview.this, value,CameraPreview.this);
                         } catch (JSONException e) {
@@ -138,7 +176,12 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
                     public void onErrorResponse(VolleyError error) {
                         // TODO Auto-generated method stub
                         progressBar.dismiss();
-                        Toast.makeText(getApplicationContext(), "No se establecio conexión con el servidor: Intente de nuevo", Toast.LENGTH_LONG).show();
+                        if (!Utilidades.isActiveInternetConnection(getApplicationContext(),URL)) {
+                            Utilidades.sendToastMessageLong(getApplicationContext(),"No se establecio conexión con el servidor: Intente de nuevo");
+                        }else{
+                            Utilidades.sendToastMessageLong(getApplicationContext(),"Por favor revise su conexión a Internet");
+                            //Toast.makeText(getApplicationContext(), "No se establecio conexión con el servidor: Intente de nuevo", Toast.LENGTH_LONG).show();
+                        }
                         defaultConfig();
 
                     }

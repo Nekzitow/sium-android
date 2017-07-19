@@ -3,18 +3,44 @@ package umaya.edu.checador.Services;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
+import android.widget.Toast;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Calendar;
 
 /**
  * Created by OSORIO on 16/01/2017.
  */
 
 public class Utilidades {
+    public static String LOG_TAG = "Utils";
     static public boolean isNetworkAviable(Context context){
         ConnectivityManager cm =
                 (ConnectivityManager) context.getSystemService(context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null
                 && activeNetwork.isConnectedOrConnecting();
+    }
+
+    static public boolean isActiveInternetConnection(Context context,String url){
+        if (isNetworkAviable(context)) {
+            try {
+                HttpURLConnection urlc = (HttpURLConnection) (new URL(url).openConnection());
+                urlc.setRequestProperty("User-Agent", "Test");
+                urlc.setRequestProperty("Connection", "close");
+                urlc.setConnectTimeout(1500);
+                urlc.connect();
+                return (urlc.getResponseCode() == 200);
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error checking internet connection", e);
+            }
+        } else {
+            Log.d(LOG_TAG, "No network available!");
+        }
+        return false;
     }
 
     public static String getMonth(int mes){
@@ -58,5 +84,18 @@ public class Utilidades {
                 break;
         }
         return mesActual;
+    }
+
+
+    public static void sendToastMessageLong(Context context, String Message){
+        Toast.makeText(context, Message, Toast.LENGTH_LONG).show();
+    }
+
+    public static String obtenerFecha(){
+        Calendar fechaActual = Calendar.getInstance();
+        String mes = Utilidades.getMonth(fechaActual.get(Calendar.MONTH));
+        String dia = fechaActual.get(Calendar.DATE) < 10 ? "0"+fechaActual.get(Calendar.DATE) : fechaActual.get(Calendar.DATE)+"";
+        String fecha = dia+" "+mes;
+        return fecha;
     }
 }

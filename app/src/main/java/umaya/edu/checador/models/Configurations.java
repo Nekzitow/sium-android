@@ -15,7 +15,11 @@ public class Configurations {
     //url de login provisional debido al tipo de conexion
     public static final String loginUrl = "/checador/login.php";
 
+    public static final String LOGIN_URL_ADMON = "/checador/logina.php";
+
     public static  String CHECK_URL = "/checador/check.php";
+
+    public static  String CHECK_URL_ADMON = "/checador/checka.php";
 
     public static final String KEY_USER = "user";
     public static final String KEY_PASSWORD = "password";
@@ -28,8 +32,11 @@ public class Configurations {
     public static final String SHARED_NAME = "nombre";
     public static final String SHARED_ID = "id";
     public static final String SHARED_URL = "url";
+    public static final String SHARED_CHECK = "hora";
 
     public static final String LOGGEDIN_SHARED_PREF = "loggedin";
+
+    public static final String LOGIN_TIPE_USER= "tipo";
 
 
 }

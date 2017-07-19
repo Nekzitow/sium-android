@@ -16,6 +16,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
@@ -49,11 +50,13 @@ import java.util.ArrayList;
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 import umaya.edu.checador.Notifications.PushNotificationsContract;
 import umaya.edu.checador.Notifications.PushNotificationsPresenter;
+import umaya.edu.checador.Services.GetCurrentLocation;
 import umaya.edu.checador.Services.Utilidades;
 import umaya.edu.checador.models.Configurations;
 import umaya.edu.checador.Notifications.PrincipalAdapter;
 import umaya.edu.checador.models.Coordenadas;
 import umaya.edu.checador.models.DBHelper;
+import umaya.edu.checador.models.Empleado;
 import umaya.edu.checador.models.Notificaciones;
 import umaya.edu.checador.models.Plantel;
 
@@ -76,10 +79,13 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
     private PushNotificationsPresenter mNotificationsPresenter;
     private ArrayList<Notificaciones> notificaciones = new ArrayList<Notificaciones>();
     private ArrayList<LatLng> arrayPoints = new ArrayList<LatLng>();
+    private ArrayList<LatLng> arrayPointsEstacionamiento = new ArrayList<LatLng>();
     protected GoogleApiClient mGoogleApiClient;
     protected Location mLastLocation;
     private TextView nombreDocente;
     private TextView identificador;
+    private TextView mLastcheck;
+    GetCurrentLocation currentLoc;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +98,9 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                launchActivity(CameraPreview.class);
+                //if(comparaRango()){
+                    launchActivity(CameraPreview.class);
+                //}
             }
         });
         broadcastReceiver = new BroadcastReceiver() {
@@ -107,6 +115,7 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
         };
         nombreDocente = (TextView) findViewById(R.id.nombreDocente);
         identificador = (TextView) findViewById(R.id.identificador);
+        mLastcheck = (TextView) findViewById(R.id.ultimoCheck);
         principalAdapter = new PrincipalAdapter(notificaciones);
         mRecyclerView = (RecyclerView) findViewById(R.id.notifications);
         mNoMessagesView = (LinearLayout) findViewById(R.id.noMessages);
@@ -114,10 +123,13 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
         mRecyclerView.setAdapter(principalAdapter);
         mNotificationsPresenter = new PushNotificationsPresenter(
                 this, FirebaseMessaging.getInstance());
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
         llenarRecycler();
         llenarPlanteles();
         buildGoogleApiClient();
-
+        currentLoc = new GetCurrentLocation(this);
+        setUserData();
     }
 
 
@@ -138,9 +150,6 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
             case R.id.menuLogout:
                 logout();
                 break;
-            case R.id.ubicacion:
-                comparaRango();
-                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -151,16 +160,19 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
         mPresenter.start();
         LocalBroadcastManager.getInstance(getApplication())
                 .registerReceiver(broadcastReceiver, new IntentFilter(ACTION_NOTIFY_NEW));
-        notificaciones.clear();
+        getLastCheck();
     }
 
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        mPresenter.start();
+        //mPresenter.start();
         LocalBroadcastManager.getInstance(getApplication())
                 .registerReceiver(broadcastReceiver, new IntentFilter(ACTION_NOTIFY_NEW));
+        notificaciones.clear();
+        principalAdapter.notifyDataSetChanged();
+        principalAdapter.clear();
     }
 
     private void logout() {
@@ -210,6 +222,7 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
                 .unregisterReceiver(broadcastReceiver);
         notificaciones.clear();
         principalAdapter.notifyDataSetChanged();
+        principalAdapter.clear();
     }
 
     public void launchActivity(Class<?> clss) {
@@ -232,7 +245,7 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
 
     @Override
     public void showEmptyState(boolean empty) {
-        if (!Utilidades.isNetworkAviable(getApplicationContext())) {
+        if (!Utilidades.isActiveInternetConnection(getApplicationContext(), "http://www.universidadmaya.edu.mx")) {
             mNoNetworkConnected.setVisibility(View.VISIBLE);
             mRecyclerView.setVisibility(View.GONE);
             mNoMessagesView.setVisibility(View.GONE);
@@ -260,6 +273,7 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
     public void llenarRecycler() {
         DBHelper dbHelper = DBHelper.getInstance(getApplicationContext());
         notificaciones = dbHelper.getAllNotifications();
+        mPresenter.clearNotifications();
         for (Notificaciones noti : notificaciones) {
             Log.i(TAG, "tamaño de lista: " + noti.getContenido());
             mPresenter.savePushMessage(noti.getTitulo(), noti.getContenido(), noti.getExtra(), noti.getFecha());
@@ -280,6 +294,12 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
         arrayPoints.add(new LatLng(16.750741, -93.136222));
         arrayPoints.add(new LatLng(16.750793, -93.136510));
         arrayPoints.add(new LatLng(16.750320, -93.136751));
+
+        //ESTACIONAMIENTO
+        arrayPointsEstacionamiento.add(new LatLng(16.749687, -93.138211));
+        arrayPointsEstacionamiento.add(new LatLng(16.749470, -93.138269));
+        arrayPointsEstacionamiento.add(new LatLng(16.749484, -93.138811));
+        arrayPointsEstacionamiento.add(new LatLng(16.749750, -93.138717));
     }
 
     /**
@@ -314,6 +334,7 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
     protected void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
+        currentLoc.connectGoogleApi();
     }
 
     @Override
@@ -322,33 +343,47 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
         if (mGoogleApiClient.isConnected()) {
             mGoogleApiClient.disconnect();
         }
+        currentLoc.disConnectGoogleApi();
     }
 
     public void obtenerPosicion() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
             return;
+        } else {
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+            mLastLocation.setLatitude(Double.parseDouble(currentLoc.latitude));
+            mLastLocation.setLongitude(Double.parseDouble(currentLoc.longitude));
+            Toast.makeText(getApplicationContext(),
+                    "Latitud: " + mLastLocation.getLatitude() + ". Longitud: "
+                            + mLastLocation.getLongitude(), Toast.LENGTH_LONG)
+                    .show();
+            Log.i(TAG, "Latitud: " + mLastLocation.getLatitude() + ". Longitud: " + mLastLocation.getLongitude());
         }
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        Log.i(TAG, "Latitud: " + mLastLocation.getLatitude() + ". Longitud: " + mLastLocation.getLongitude());
+
+
     }
 
-    public void comparaRango() {
+    public boolean comparaRango() {
+        boolean respuesta = false;
         obtenerPosicion();
         if (mLastLocation != null) {
             LatLng miUbicacion = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
             if (PolyUtil.containsLocation(miUbicacion, arrayPoints, true)) {
-                Toast.makeText(getApplicationContext(), "DENTRO DE LA UNIVERSIDAD", Toast.LENGTH_LONG).show();
+                respuesta = true;
             } else {
-                Toast.makeText(getApplicationContext(), "FUERA DE LA UNIVERSIDAD", Toast.LENGTH_LONG).show();
+                if (PolyUtil.containsLocation(miUbicacion, arrayPointsEstacionamiento, true)) {
+                    respuesta = true;
+                } else {
+                    respuesta = false;
+                }
             }
+
         }
+
+        return respuesta;
     }
 
     private void initCollapsingToolbar() {
@@ -378,5 +413,22 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
             }
         });
     }
+
+    private void setUserData() {
+        DBHelper mDbHelper = DBHelper.getInstance(getApplicationContext());
+        SQLiteDatabase mSqLiteDatabase = mDbHelper.getReadableDatabase();
+        Empleado empleados = mDbHelper.getEmpleado(mSqLiteDatabase);
+        nombreDocente.setText(empleados.getNombre().trim());
+        identificador.setText("Número de código: " + empleados.getIdenti() + "");
+        getLastCheck();
+    }
+
+    private void getLastCheck() {
+        SharedPreferences preferences = getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        String url = preferences.getString(Configurations.SHARED_CHECK, "");
+        mLastcheck.setText("Último registro: " + url + "");
+    }
+
+
 
 }

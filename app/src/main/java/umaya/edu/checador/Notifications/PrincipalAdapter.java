@@ -57,7 +57,11 @@ public class PrincipalAdapter extends RecyclerView.Adapter<PrincipalAdapter.View
         notifyItemInserted(0);
     }
 
-
+    public void clear() {
+        int size = this.notificacionesList.size();
+        this.notificacionesList.clear();
+        notifyItemRangeRemoved(0, size);
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public TextView fecha;

@@ -9,4 +9,9 @@
     <string name="no_message_text">No hay notificaciones</string>
     <string name="no_network_text">No hay conexión a internet</string>
     <string name="google_maps_key" templateMergeStrategy="preserve" translatable="false">AIzaSyD2d67SCWtrjFPn4sVcqzKfbPa-PE-UGCQ</string>
+    <string name="title_activity_seleccion">Seleccion</string>
+
+    <string name="admin">Administrativo</string>
+    <string name="doc">Docente</string>
+    <string name="opcion">Selecciona una opción</string>
 </resources>

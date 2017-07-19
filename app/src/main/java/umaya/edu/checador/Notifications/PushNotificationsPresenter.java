@@ -1,5 +1,8 @@
 package umaya.edu.checador.Notifications;
 
+import android.nfc.Tag;
+import android.util.Log;
+
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
@@ -33,6 +36,7 @@ public class PushNotificationsPresenter implements PushNotificationsContract.Pre
                     @Override
                     public void onLoaded(ArrayList<Notificaciones> notifications) {
                         if (notifications.size() > 0) {
+                            Log.i("PRINCIPAL",notifications.size()+"");
                             mNotificationView.showEmptyState(false);
                             mNotificationView.showNotifications(notifications);
                         } else {
@@ -41,6 +45,11 @@ public class PushNotificationsPresenter implements PushNotificationsContract.Pre
                     }
                 }
         );
+    }
+
+    @Override
+    public void clearNotifications() {
+        PushNotificacionsRepository.getInstance().clearPushNotifications();
     }
 
     @Override

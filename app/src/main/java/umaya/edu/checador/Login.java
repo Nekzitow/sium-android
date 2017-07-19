@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.multidex.MultiDex;
 import android.support.v4.app.ActivityCompat;
@@ -18,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,8 +40,10 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import umaya.edu.checador.Services.Utilidades;
 import umaya.edu.checador.models.Configurations;
 import umaya.edu.checador.models.DBHelper;
+import umaya.edu.checador.models.Notificaciones;
 import umaya.edu.checador.models.RequestSingleton;
 
 public class Login extends AppCompatActivity {
@@ -48,6 +52,9 @@ public class Login extends AppCompatActivity {
     private EditText usuario;
     private EditText password;
     private Button login;
+    private RadioGroup mRadioGroup;
+    //tipo login = 2 por default es docente 1 e admon
+    private int tipoLogin = 2;//docente
 
     private FirebaseRemoteConfig firebaseRemoteConfig;
     private SharedPreferences preferences;
@@ -58,6 +65,8 @@ public class Login extends AppCompatActivity {
     private RequestQueue queue;
 
     private ProgressDialog progressBar;
+
+    private int tipo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,9 +82,31 @@ public class Login extends AppCompatActivity {
                 validateUser();
             }
         });
+        tipo = getIntent().getIntExtra("tipo",0);
         progressBar = new ProgressDialog(this);
-        firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-        defaultConfig();
+        SharedPreferences preferences = getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
+        loggedIn = preferences.getBoolean(Configurations.LOGGEDIN_SHARED_PREF, false);
+        mRadioGroup = (RadioGroup) findViewById(R.id.radioGroup1);
+        getExtras();
+        if (loggedIn) {
+            launchActivity(Principal.class);
+        }else{
+            mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup radioGroup, @IdRes int i) {
+                    switch (i){
+                        case R.id.radioDocente:
+                            tipoLogin = 2;
+                            break;
+                        case R.id.radioAdmon:
+                            tipoLogin = 1;
+                            break;
+                    }
+                }
+            });
+            firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+            defaultConfig();
+        }
     }
 
     public void validateUser() {
@@ -95,7 +126,14 @@ public class Login extends AppCompatActivity {
             JSONObject s = new JSONObject();
             JSONArray js = new JSONArray();
             try {
-                s.put(Configurations.KEY_USER, userName);
+                switch (tipoLogin){
+                    case 1:
+                        s.put(Configurations.KEY_USER, userName+"@universidadmaya.edu.mx");
+                        break;
+                    case 2:
+                        s.put(Configurations.KEY_USER, userName);
+                        break;
+                }
                 s.put(Configurations.KEY_PASSWORD, passwordField);
                 js.put(0, s);
             } catch (JSONException e) {
@@ -105,8 +143,19 @@ public class Login extends AppCompatActivity {
             SharedPreferences preferences = getSharedPreferences(Configurations.SHARED_PREF_NAME, Context.MODE_PRIVATE);
             String url2 = preferences.getString(Configurations.SHARED_URL, "http://192.168.1.4");
             Log.d(TAG,url2);
+            //comparamos el tipo de usuario para preparar la url a enviar
+            switch (tipoLogin){
+                case 1:
+                    url2+=Configurations.LOGIN_URL_ADMON;
+                    break;
+                case 2:
+                    url2+=Configurations.loginUrl;
+                    break;
+            }
+
+            Log.i(TAG,url2);
             final JsonArrayRequest jsonObjectRequest = new JsonArrayRequest
-                    (Request.Method.POST, url2+Configurations.loginUrl, js, new Response.Listener<JSONArray>() {
+                    (Request.Method.POST, url2, js, new Response.Listener<JSONArray>() {
 
                         @Override
                         public void onResponse(JSONArray response) {
@@ -131,7 +180,8 @@ public class Login extends AppCompatActivity {
                         public void onErrorResponse(VolleyError error) {
                             // TODO Auto-generated method stub
                             progressBar.dismiss();
-                            Toast.makeText(getApplicationContext(), "No se establecio conexión con el servidor", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "No se establecio conexión con el servidor"+error.getMessage(), Toast.LENGTH_SHORT).show();
+                            //Log.e(TAG, error.getMessage());
                             defaultConfig();
                         }
                     });
@@ -162,11 +212,16 @@ public class Login extends AppCompatActivity {
         SQLiteDatabase sqLiteDatabaseRead = dbHelper.getReadableDatabase();
         SQLiteDatabase sqLiteDatabase = dbHelper.getWritableDatabase();
         try {
+            String user = "";
+            if (tipoLogin == 1)
+                user = usuarios.getString("email");
+            else
+                user = usuarios.getString("usuario");
             int id = dbHelper.showMatchUser(sqLiteDatabaseRead, Integer.parseInt(personal.getString("id")));
             switch (id) {
                 case 0:
                     setPreferences(personal.getString("nombre"), personal.getInt("id"));
-                    dbHelper.insertLogin(sqLiteDatabase, personal, usuarios.getString("usuario"));
+                    dbHelper.insertLogin(sqLiteDatabase, personal, user);
                     Toast.makeText(getApplicationContext(), "Bienvenido: " + personal.getString("nombre"), Toast.LENGTH_SHORT).show();
                     launchActivity(Principal.class);
                     break;
@@ -192,6 +247,7 @@ public class Login extends AppCompatActivity {
         editor.putBoolean(Configurations.LOGGEDIN_SHARED_PREF, true);
         editor.putString(Configurations.SHARED_NAME, nombre);
         editor.putInt(Configurations.SHARED_ID, id);
+        editor.putInt(Configurations.LOGIN_TIPE_USER,tipoLogin);
         editor.commit();
     }
 
@@ -265,6 +321,40 @@ public class Login extends AppCompatActivity {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         MultiDex.install(this);
+    }
+
+    private void getExtras() {
+        Notificaciones notificaciones = new Notificaciones();
+        if (getIntent().getExtras() != null) {
+            for (String key : getIntent().getExtras().keySet()) {
+                Object value = getIntent().getExtras().get(key);
+                if (key.equalsIgnoreCase("titulo")) {
+                    notificaciones.setTitulo(value.toString());
+                    Log.i(TAG,value.toString());
+                    getIntent().removeExtra(key);
+                }
+
+                if (key.equalsIgnoreCase("cuerpo") ) {
+                    notificaciones.setContenido(value.toString());
+                    Log.i(TAG,value.toString());
+                    getIntent().removeExtra(key);
+                }
+                if (key.equalsIgnoreCase("date") ) {
+                    notificaciones.setExtra(value.toString());
+                    Log.i(TAG,value.toString());
+                    getIntent().removeExtra(key);
+                }
+            }
+            notificaciones.setFecha(Utilidades.obtenerFecha());
+            if (notificaciones.getTitulo() == null) {
+            }else{
+                Log.i(TAG,"ENTRO");
+                DBHelper dbHelper = DBHelper.getInstance(getApplicationContext());
+                SQLiteDatabase sqLiteDatabase = dbHelper.getWritableDatabase();
+                dbHelper.insertNotifications(sqLiteDatabase, notificaciones);
+            }
+
+        }
     }
 
 }

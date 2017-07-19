@@ -51,6 +51,10 @@ public class CustomDialog {
                 imageView.setImageResource(R.mipmap.doublecheck);
                 text.setText("YA REGISTRADO");
                 break;
+            case 7:
+                imageView.setBackgroundColor(Color.rgb(221,75,57));
+                imageView.setImageResource(R.mipmap.warning);
+                text.setText("SALON NO VÁLIDO");
             default:
                 imageView.setBackgroundColor(Color.rgb(221,75,57));
                 imageView.setImageResource(R.mipmap.warning);

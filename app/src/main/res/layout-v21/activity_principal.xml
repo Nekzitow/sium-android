@@ -64,7 +64,17 @@
                         android:textColor="@android:color/white"
                         android:id="@+id/identificador"
                         />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Último registro: 12:04:45"
+                        android:gravity="bottom"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                        android:textColor="@android:color/white"
+                        android:id="@+id/ultimoCheck"
+                        />
                 </LinearLayout>
+
             </RelativeLayout>
 
             <android.support.v7.widget.Toolbar

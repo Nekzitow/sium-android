@@ -12,48 +12,105 @@
         android:layout_centerInParent="true"
         android:scaleType="centerCrop"
         android:src="@drawable/login_background" />
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:textStyle="bold"
-            android:text="@string/sesion"
-            android:textColor="#3b3a39"
-            android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
-
-        <EditText
-            android:id="@+id/usuario"
+        android:layout_centerInParent="true">
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="15dp"
-            android:hint="@string/user" />
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textStyle="bold"
+                android:text="@string/sesion"
+                android:textColor="#3b3a39"
+                android:textAppearance="@style/TextAppearance.AppCompat.Display1" />
 
-        <EditText
-            android:id="@+id/passwoord"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="15dp"
-            android:hint="@string/pass"
-            android:inputType="textPassword" />
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="15dp">
+                <EditText
+                    android:id="@+id/usuario"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/user" />
+            </android.support.design.widget.TextInputLayout>
 
-        <Button
-            android:id="@+id/b_sign_in"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="16dp"
-            android:elevation="2dp"
-            android:text="@string/action_sign_in"
-            android:textColor="#fbe9e7"
-            android:textStyle="bold"
-            android:theme="@style/ButtonLogin" />
-    </LinearLayout>
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp">
+
+                <EditText
+                    android:id="@+id/passwoord"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/pass"
+                    android:inputType="textPassword" />
+            </android.support.design.widget.TextInputLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="@string/opcion"
+                android:textColor="#3b3a39"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:layout_marginTop="15dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"/>
+            <RadioGroup
+                android:id="@+id/radioGroup1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="15dp"
+                android:gravity="center"
+                android:orientation="horizontal" >
+
+                <RadioButton
+                    android:id="@+id/radioDocente"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/rbtn_selector"
+                    android:button="@null"
+                    android:checked="true"
+                    android:gravity="center"
+                    android:padding="7dp"
+                    android:text="@string/doc"
+                    android:textColor="@drawable/rbtn_textcolor_selector" />
+
+                <RadioButton
+                    android:id="@+id/radioAdmon"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/rbtn_selector"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:padding="7dp"
+                    android:text="@string/admin"
+                    android:textColor="@drawable/rbtn_textcolor_selector" />
+            </RadioGroup>
+            <Button
+                android:id="@+id/b_sign_in"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_margin="15dp"
+                android:text="@string/action_sign_in"
+                android:textColor="#fbe9e7"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textAllCaps="false"
+                android:theme="@style/ButtonLogin" />
+        </LinearLayout>
+    </ScrollView>
 
 </RelativeLayout>
 

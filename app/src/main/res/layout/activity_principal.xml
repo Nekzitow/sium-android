@@ -50,19 +50,26 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@android:color/white"
-                        android:text="Miguel Angel Osorio Cruz"
                         android:textAppearance="@style/TextAppearance.AppCompat.Large"
                         />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Número de código: 142"
                         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
                         android:textColor="@android:color/white"
                         android:id="@+id/identificador"
                         />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Último registro: 12:04:45"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                        android:textColor="@android:color/white"
+                        android:id="@+id/ultimoCheck"
+                        />
                 </LinearLayout>
+
             </RelativeLayout>
 
             <android.support.v7.widget.Toolbar

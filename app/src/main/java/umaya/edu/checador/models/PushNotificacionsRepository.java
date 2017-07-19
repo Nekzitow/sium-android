@@ -27,6 +27,10 @@ public final class PushNotificacionsRepository {
         callback.onLoaded(new ArrayList<>(LOCAL_PUSH_NOTIFICATIONS.values()));
     }
 
+    public void clearPushNotifications(){
+        LOCAL_PUSH_NOTIFICATIONS.clear();
+    }
+
     public void savePushNotification(Notificaciones notification) {
         LOCAL_PUSH_NOTIFICATIONS.put(notification.getId(), notification);
     }
