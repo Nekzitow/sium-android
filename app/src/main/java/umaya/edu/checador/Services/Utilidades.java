@@ -25,10 +25,10 @@ public class Utilidades {
                 && activeNetwork.isConnectedOrConnecting();
     }
 
-    static public boolean isActiveInternetConnection(Context context,String url){
+    static public boolean isActiveInternetConnection(Context context,URL url){
         if (isNetworkAviable(context)) {
             try {
-                HttpURLConnection urlc = (HttpURLConnection) (new URL(url).openConnection());
+                HttpURLConnection urlc = (HttpURLConnection) (url.openConnection());
                 urlc.setRequestProperty("User-Agent", "Test");
                 urlc.setRequestProperty("Connection", "close");
                 urlc.setConnectTimeout(1500);

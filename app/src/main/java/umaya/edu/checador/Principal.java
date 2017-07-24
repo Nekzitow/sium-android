@@ -15,6 +15,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
@@ -45,6 +46,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.maps.android.PolyUtil;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
@@ -99,7 +102,7 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
             @Override
             public void onClick(View view) {
                 //if(comparaRango()){
-                    launchActivity(CameraPreview.class);
+                launchActivity(CameraPreview.class);
                 //}
             }
         });
@@ -161,6 +164,11 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
         LocalBroadcastManager.getInstance(getApplication())
                 .registerReceiver(broadcastReceiver, new IntentFilter(ACTION_NOTIFY_NEW));
         getLastCheck();
+        try {
+            new TaskConnection().execute(new URL("http://www.universidadmaya.edu.mx"));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -245,15 +253,9 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
 
     @Override
     public void showEmptyState(boolean empty) {
-        if (!Utilidades.isActiveInternetConnection(getApplicationContext(), "http://www.universidadmaya.edu.mx")) {
-            mNoNetworkConnected.setVisibility(View.VISIBLE);
-            mRecyclerView.setVisibility(View.GONE);
-            mNoMessagesView.setVisibility(View.GONE);
-        } else {
-            mNoNetworkConnected.setVisibility(View.GONE);
-            mRecyclerView.setVisibility(empty ? View.GONE : View.VISIBLE);
-            mNoMessagesView.setVisibility(empty ? View.VISIBLE : View.GONE);
-        }
+        mNoNetworkConnected.setVisibility(View.GONE);
+        mRecyclerView.setVisibility(empty ? View.GONE : View.VISIBLE);
+        mNoMessagesView.setVisibility(empty ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -429,6 +431,26 @@ public class Principal extends AppCompatActivity implements PushNotificationsCon
         mLastcheck.setText("Último registro: " + url + "");
     }
 
+    public class TaskConnection extends AsyncTask<URL, Void, Boolean> {
 
+        @Override
+        protected Boolean doInBackground(URL... urls) {
+            URL mUrl = urls[0];
+            boolean verdadero = false;
+            if (!Utilidades.isActiveInternetConnection(getApplicationContext(), mUrl)) {
+                //no hay internet
+                verdadero = true;
+            }
+            return verdadero;
+        }
 
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            if (aBoolean) {
+                mNoNetworkConnected.setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.GONE);
+                mNoMessagesView.setVisibility(View.GONE);
+            }
+        }
+    }
 }

@@ -28,6 +28,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -176,11 +178,15 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
                     public void onErrorResponse(VolleyError error) {
                         // TODO Auto-generated method stub
                         progressBar.dismiss();
-                        if (!Utilidades.isActiveInternetConnection(getApplicationContext(),URL)) {
-                            Utilidades.sendToastMessageLong(getApplicationContext(),"No se establecio conexión con el servidor: Intente de nuevo");
-                        }else{
-                            Utilidades.sendToastMessageLong(getApplicationContext(),"Por favor revise su conexión a Internet");
-                            //Toast.makeText(getApplicationContext(), "No se establecio conexión con el servidor: Intente de nuevo", Toast.LENGTH_LONG).show();
+                        try {
+                            if (!Utilidades.isActiveInternetConnection(getApplicationContext(),new URL(URL))) {
+                                Utilidades.sendToastMessageLong(getApplicationContext(),"No se establecio conexión con el servidor: Intente de nuevo");
+                            }else{
+                                Utilidades.sendToastMessageLong(getApplicationContext(),"Por favor revise su conexión a Internet");
+                                //Toast.makeText(getApplicationContext(), "No se establecio conexión con el servidor: Intente de nuevo", Toast.LENGTH_LONG).show();
+                            }
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
                         }
                         defaultConfig();
 
