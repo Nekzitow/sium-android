@@ -130,10 +130,7 @@ public class CameraPreview extends AppCompatActivity implements ZXingScannerView
         try {
             s.put(Configurations.SHARED_ID,user[0]);
             s.put("salon",user[1]);
-            Log.e(TAG,user[1]);
             s.put("user",idUsuarioApp);
-            Log.e(TAG,user[0]);
-            Log.e(TAG,idUsuarioApp+"");
             js.put(0,s);
         } catch (JSONException e) {
             e.printStackTrace();

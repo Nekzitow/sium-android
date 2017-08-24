@@ -14,4 +14,5 @@
     <string name="admin">Administrativo</string>
     <string name="doc">Docente</string>
     <string name="opcion">Selecciona una opción</string>
+    <string name="description">Universidad maya</string>
 </resources>

@@ -48,7 +48,7 @@ public class PrincipalAdapter extends RecyclerView.Adapter<PrincipalAdapter.View
         setList(items);
         notifyDataSetChanged();
     }
-    public void setList(ArrayList<Notificaciones> list) {
+    private void setList(ArrayList<Notificaciones> list) {
         this.notificacionesList = list;
     }
 
